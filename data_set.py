@@ -5,6 +5,7 @@ import torch
 import json
 import matplotlib.pyplot as plt
 from PIL import Image
+import numpy as np
 
 
 class CampusImagesDataSet(Dataset):
@@ -24,10 +25,13 @@ class CampusImagesDataSet(Dataset):
         if self.transform:
             image = self.transform(image)
 
-        label = self.labels[image_name]
-        sample = {'image': image, 'label': label}
+        label = torch.from_numpy(
+            np.array(self.labels[image_name], dtype=np.float32)
+        )
+        sample = [image, label]
 
         return sample
+
 
 if __name__ == "__main__":
     dataset = CampusImagesDataSet('processed_data')
