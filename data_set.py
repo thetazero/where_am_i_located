@@ -8,12 +8,31 @@ from PIL import Image
 import numpy as np
 
 
+def normalize_point(point, mean, std):
+    return (point - mean) / std
+
+
+def denormalize_point(point, mean, std):
+    return point * std + mean
+
+
 class CampusImagesDataSet(Dataset):
 
     def __init__(self, root_dir, transform=transforms.ToTensor()):
         self.labels = json.load(open(f'{root_dir}/labels.json'))
         self.root_dir = root_dir
         self.transform = transform
+
+        self.latitudes = [p[0] for p in self.labels.values()]
+        self.longitudes = [p[1] for p in self.labels.values()]
+        self.mean_latitude = sum(self.latitudes) / len(self.latitudes)
+        self.mean_longitude = sum(self.longitudes) / len(self.longitudes)
+        self.std_latitude = np.std(self.latitudes)
+        self.std_longitude = np.std(self.longitudes)
+    
+    def label_to_real_location(self, label):
+        lat, lon = label
+        return denormalize_point(lat, self.mean_latitude, self.std_latitude), denormalize_point(lon, self.mean_longitude, self.std_longitude)
 
     def __len__(self):
         return len(self.labels.keys())
@@ -25,8 +44,12 @@ class CampusImagesDataSet(Dataset):
         if self.transform:
             image = self.transform(image)
 
+        label = self.labels[image_name]
+        [lat, lon] = label
+        lat = normalize_point(lat, self.mean_latitude, self.std_latitude)
+        lon = normalize_point(lon, self.mean_longitude, self.std_longitude)
         label = torch.from_numpy(
-            np.array(self.labels[image_name], dtype=np.float32)
+            np.array([lat, lon], dtype=np.float32)
         )
         sample = [image, label]
 
