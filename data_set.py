@@ -1,13 +1,15 @@
 from torchvision import transforms, utils, io
 import os
 from torch.utils.data import Dataset, DataLoader
+import torch
 import json
 import matplotlib.pyplot as plt
+from PIL import Image
 
 
 class CampusImagesDataSet(Dataset):
 
-    def __init__(self, root_dir, transform=None):
+    def __init__(self, root_dir, transform=transforms.ToTensor()):
         self.labels = json.load(open(f'{root_dir}/labels.json'))
         self.root_dir = root_dir
         self.transform = transform
@@ -17,13 +19,14 @@ class CampusImagesDataSet(Dataset):
 
     def __getitem__(self, idx):
         image_name = list(self.labels.keys())[idx]
-        image = io.read_image(f'{self.root_dir}/{image_name}')
+        image = Image.open(f'{self.root_dir}/{image_name}')
+
+        if self.transform:
+            image = self.transform(image)
 
         label = self.labels[image_name]
         sample = {'image': image, 'label': label}
 
-        if self.transform:
-            sample = self.transform(sample)
         return sample
 
 if __name__ == "__main__":
