@@ -145,9 +145,8 @@ def plot_coordinates(coordinates, output_file):
 
 
 if __name__ == "__main__":
-    image_path = "path_to_your_image.png"
-    raw_data_path = "raw_data"
-    output_path = "processed_data"
+    raw_data_path = "fake_val_raw_data"
+    output_path = "fake_val_processed_data"
 
     stomp = False  # Set to True if you want to overwrite the existing output data
 

@@ -8,12 +8,12 @@ from PIL import Image
 import numpy as np
 
 
-def normalize_point(point, mean, std):
-    return (point - mean) / std
+def normalize_point(point, minval, maxval):
+    return (point - minval) / (maxval - minval)
 
 
-def denormalize_point(point, mean, std):
-    return point * std + mean
+def denormalize_point(point, minval, maxval):
+    return point * (maxval - minval) + minval
 
 
 class CampusImagesDataSet(Dataset):
@@ -25,14 +25,15 @@ class CampusImagesDataSet(Dataset):
 
         self.latitudes = [p[0] for p in self.labels.values()]
         self.longitudes = [p[1] for p in self.labels.values()]
-        self.mean_latitude = sum(self.latitudes) / len(self.latitudes)
-        self.mean_longitude = sum(self.longitudes) / len(self.longitudes)
-        self.std_latitude = np.std(self.latitudes)
-        self.std_longitude = np.std(self.longitudes)
+
+        self.min_lat = min(self.latitudes)
+        self.max_lat = max(self.latitudes)
+        self.min_lon = min(self.longitudes)
+        self.max_lon = max(self.longitudes)
     
     def label_to_real_location(self, label):
         lat, lon = label
-        return denormalize_point(lat, self.mean_latitude, self.std_latitude), denormalize_point(lon, self.mean_longitude, self.std_longitude)
+        return denormalize_point(lat, self.min_lat, self.max_lat), denormalize_point(lon, self.min_lon, self.max_lon)
 
     def __len__(self):
         return len(self.labels.keys())
@@ -46,8 +47,8 @@ class CampusImagesDataSet(Dataset):
 
         label = self.labels[image_name]
         [lat, lon] = label
-        lat = normalize_point(lat, self.mean_latitude, self.std_latitude)
-        lon = normalize_point(lon, self.mean_longitude, self.std_longitude)
+        lat = normalize_point(lat, self.min_lat, self.max_lat)
+        lon = normalize_point(lon, self.min_lon, self.max_lon)
         label = torch.from_numpy(
             np.array([lat, lon], dtype=np.float32)
         )
