@@ -74,10 +74,24 @@ class CampusImagesDataSet(Dataset):
 
         self.grid_size = 5
 
+        self.image_one_hot_labels_freq = {}
+        for (_, [lat, lon]) in self.labels.items():
+            idx = torch.argmax(
+                self.real_location_to_label(lat, lon)
+            )
+            idx = int(idx)
+            if idx in self.image_one_hot_labels_freq:
+                self.image_one_hot_labels_freq[idx] += 1
+            else:
+                self.image_one_hot_labels_freq[idx] = 1
+
     def label_to_real_location(self, label):
         # lat, lon = label
         # return denormalize_point(lat, self.min_lat, self.max_lat), denormalize_point(lon, self.min_lon, self.max_lon)
         return out_of_onehot(label, self.min_lat, self.max_lat, self.min_lon, self.max_lon, self.grid_size)
+    
+    def real_location_to_label(self, lat, lon):
+        return into_onehot(lat, lon, self.min_lat, self.max_lat, self.min_lon, self.max_lon, self.grid_size)
 
     def __len__(self):
         return len(self.labels.keys())

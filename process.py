@@ -47,10 +47,14 @@ def get_lat_lon(exif):
 
 
 def process(image_path):
-    image = Image.open(image_path)
-    exif = image._getexif()
+    try:
+        image = Image.open(image_path)
+        exif = image._getexif()
 
-    return get_lat_lon(exif)
+        return get_lat_lon(exif)
+    except Exception as e:
+        print(f"Error processing {image_path}")
+        raise e
 
 
 def mkdir(path):
@@ -145,8 +149,8 @@ def plot_coordinates(coordinates, output_file):
 
 
 if __name__ == "__main__":
-    raw_data_path = "fake_val_raw_data"
-    output_path = "fake_val_processed_data"
+    raw_data_path = "raw_data"
+    output_path = "processed_data"
 
     stomp = False  # Set to True if you want to overwrite the existing output data
 
@@ -160,7 +164,7 @@ if __name__ == "__main__":
 
         image_path = os.path.join(raw_data_path, file)
         labels[file] = process(image_path)
-        if stomp or not os.path.exists(os.path.join(output_path, file)):
+        if stomp or (not os.path.exists(os.path.join(output_path, file))):
             rescale_image(image_path, os.path.join(output_path, file))
 
     json.dump(labels, open(os.path.join(
