@@ -1,9 +1,11 @@
 from PIL import Image
 from PIL.ExifTags import TAGS, GPSTAGS
 import json
-import matplotlib.pyplot as plt
 import os
 from tqdm import tqdm
+
+import plotly.express as px
+import pandas as pd
 
 
 def get_geotagging(exif):
@@ -67,90 +69,48 @@ def rescale_image(image_path, output_path, new_size=(200, 200)):
     resized_image = image.resize(new_size)
     resized_image.save(output_path)
 
+
 def make_ext_from_coords(a, b):
     ax, ay = a
     bx, by = b
     return (min(ax, bx), max(ax, bx), min(ay, by), max(ay, by))
 
-def plot_coordinates(coordinates, output_file):
-    upper_left = (40.444512, -79.948693)
-    bottom_right = (40.440023, -79.937764)
 
-    landmarks = [
-        (
-            (40.444162, -79.942764),
-            "Walking to the sky"),
-        (
-            (40.443274, -79.940583),
-            "Gesling Stadium"
-        ),
-        (
-            (40.443880, -79.944273),
-            "Gates Hillman Center"
-        ),
-        (
-            (40.441877, -79.947075),
-            "Scaife Hall"
-        ),
-        (
-            (40.441252, -79.943507),
-            "Hunt Library"
-        ),
-        (
-            (40.442207, -79.943300),
-            "The Fence"
-        ),
-        (
-            (40.441995, -79.940499),
-            "Donner House"
-        ),
-        (
-            (40.441673, -79.946022),
-            "Porter Hall"
-        )
+def plot_coordinates(coordinates):
+    boundaries = [
+        (40.444512, -79.948693, "Upper Left", "Boundary"),
+        (40.444512, -79.936835, "Upper Right", "Boundary"),
+        (40.440023, -79.937764, "Bottom Right", "Boundary"),
+        (40.440023, -79.948693, "Bottom Left", "Boundary")
     ]
 
-    x = [coord[0] for coord in coordinates]
-    y = [coord[1] for coord in coordinates]
+    coords = [
+        (coord[0], coord[1], "Raw", "Raw") for coord in coordinates
+    ]
 
-    plt.figure(figsize=(10, 10))
-    plt.scatter(x, y)
+    df = pd.DataFrame(boundaries + coords, columns=[
 
-    plt.scatter(upper_left[0], upper_left[1], color='red', s=200)
-    plt.scatter(bottom_right[0], bottom_right[1], color='red', s=200)
+        'lat', 'lon', 'name', 'type'])
+    fig = px.scatter_mapbox(df,
+                            lat='lat',
+                            lon='lon',
+                            color='type',
+                            size=[100 for _ in range(len(df))],
+                            hover_data=['name'],
+                            zoom=16,
+                            height=800,
+                            width=800)
 
-    for (location, name) in landmarks:
-        plt.scatter(location[0], location[1], color='green', s=200)
-        plt.text(location[0], location[1], name, color='black', fontsize=12)
-
-    # background_img = Image.open("bg.png")
-
-    # ext = make_ext_from_coords(upper_left, bottom_right)
-    # plt.imshow(
-    #     background_img,
-    #     extent=ext
-    # )
-    # print(background_img.size)
-    # aspect=background_img.size[0]/float(background_img.size[1])*((ext[1]-ext[0])/(ext[3]-ext[2]))
-    # print(aspect)
-    # plt.gca().set_aspect(aspect/3)
-
-
-    plt.xlabel('Latitude')
-    plt.ylabel('Longitude')
-    plt.title('Coordinate Plot')
-
-    plt.tight_layout()
-    plt.subplots_adjust(left=0.15, bottom=0, right=1, top=1, wspace=0, hspace=0)
-
-
-    plt.savefig(output_file)
-    plt.close()
+    fig.update_layout(mapbox_style="open-street-map")
+    fig.update_layout(margin={"r": 0, "t": 0, "l": 0, "b": 0})
+    fig.show()
 
 
 if __name__ == "__main__":
-    raw_data_path = "raw_data"
-    output_path = "processed_data"
+    group = "test"  # train/test/val
+
+    raw_data_path = f"data/{group}/raw"
+    output_path = f"data/{group}/processed"
 
     stomp = False  # Set to True if you want to overwrite the existing output data
 
@@ -170,4 +130,4 @@ if __name__ == "__main__":
     json.dump(labels, open(os.path.join(
         output_path, "labels.json",), "w"), indent=4)
 
-    plot_coordinates(labels.values(), "picture_map.png")
+    plot_coordinates(labels.values())

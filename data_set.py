@@ -7,7 +7,6 @@ import matplotlib.pyplot as plt
 from PIL import Image
 import numpy as np
 
-
 def normalize_point(point, minval, maxval):
     return (point - minval) / (maxval - minval)
 
@@ -45,21 +44,10 @@ def out_of_onehot(onehot, min_lat, max_lat, min_lon, max_lon, grid_size):
 def one_hot_encode(label, num_classes):
     return torch.nn.functional.one_hot(label.to(torch.int64), num_classes=num_classes)
 
-# test dencode/encode
-min_lat = -2
-max_lat = 7
-min_lon = 3
-max_lon = 10
-lat = 3.4
-lon = 4.4
-grid_size = 10
-same = (out_of_onehot(into_onehot(lat, lon, min_lat, max_lat, min_lon, max_lon, grid_size), min_lat, max_lat, min_lon, max_lon, grid_size))
-assert abs(same[0] - lat) < 0.01
-assert abs(same[1] - lon) < 0.01
 
 class CampusImagesDataSet(Dataset):
 
-    def __init__(self, root_dir, transform=transforms.ToTensor()):
+    def __init__(self, root_dir, transform=transforms.ToTensor(), grid_size=5):
         self.labels = json.load(open(f'{root_dir}/labels.json'))
         self.root_dir = root_dir
         self.transform = transform
@@ -72,7 +60,7 @@ class CampusImagesDataSet(Dataset):
         self.min_lon = min(self.longitudes)
         self.max_lon = max(self.longitudes)
 
-        self.grid_size = 5
+        self.grid_size = grid_size
 
         self.image_one_hot_labels_freq = {}
         for (_, [lat, lon]) in self.labels.items():
@@ -86,12 +74,25 @@ class CampusImagesDataSet(Dataset):
                 self.image_one_hot_labels_freq[idx] = 1
 
     def label_to_real_location(self, label):
-        # lat, lon = label
-        # return denormalize_point(lat, self.min_lat, self.max_lat), denormalize_point(lon, self.min_lon, self.max_lon)
-        return out_of_onehot(label, self.min_lat, self.max_lat, self.min_lon, self.max_lon, self.grid_size)
-    
+        loc = out_of_onehot(label, self.min_lat, self.max_lat,
+                            self.min_lon, self.max_lon, self.grid_size)
+        return np.array(loc).tolist()
+
     def real_location_to_label(self, lat, lon):
         return into_onehot(lat, lon, self.min_lat, self.max_lat, self.min_lon, self.max_lon, self.grid_size)
+
+    def get_real_location_grid(self):
+        grid = []
+        for i in range(self.grid_size):
+            for j in range(self.grid_size):
+                label = one_hot_encode(torch.tensor(
+                    i * self.grid_size + j), self.grid_size * self.grid_size)
+                grid.append({
+                    "location": self.label_to_real_location(label),
+                    "grid_location": f"{i},{j}",
+                }
+                )
+        return grid
 
     def __len__(self):
         return len(self.labels.keys())
