@@ -114,6 +114,9 @@ class CampusImagesDataSet(Dataset):
         sample = [image, label]
 
         return sample
+    
+    def get_item_filename(self, idx):
+        return list(self.labels.keys())[idx]
 
 
 if __name__ == "__main__":
