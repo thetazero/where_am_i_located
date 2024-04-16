@@ -85,7 +85,7 @@ def plot_coordinates(coordinates):
     ]
 
     coords = [
-        (coord[0], coord[1], "Raw", "Raw") for coord in coordinates
+        (lat, lon, name, "Raw") for lat, lon, name in coordinates
     ]
 
     df = pd.DataFrame(boundaries + coords, columns=[
@@ -97,7 +97,7 @@ def plot_coordinates(coordinates):
                             color='type',
                             size=[100 for _ in range(len(df))],
                             hover_data=['name'],
-                            zoom=16,
+                            zoom=15,
                             height=800,
                             width=800)
 
@@ -107,7 +107,7 @@ def plot_coordinates(coordinates):
 
 
 if __name__ == "__main__":
-    group = "test"  # train/test/val
+    group = "train"  # train/test/val
 
     raw_data_path = f"data/{group}/raw"
     output_path = f"data/{group}/processed"
@@ -130,4 +130,8 @@ if __name__ == "__main__":
     json.dump(labels, open(os.path.join(
         output_path, "labels.json",), "w"), indent=4)
 
-    plot_coordinates(labels.values())
+    coordinates = [
+        (value[0], value[1], key) for key, value in labels.items()
+    ]
+
+    plot_coordinates(coordinates)
