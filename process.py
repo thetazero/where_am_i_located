@@ -77,18 +77,11 @@ def make_ext_from_coords(a, b):
 
 
 def plot_coordinates(coordinates):
-    boundaries = [
-        (40.444512, -79.948693, "Upper Left", "Boundary"),
-        (40.444512, -79.936835, "Upper Right", "Boundary"),
-        (40.440023, -79.937764, "Bottom Right", "Boundary"),
-        (40.440023, -79.948693, "Bottom Left", "Boundary")
-    ]
-
     coords = [
         (lat, lon, name, "Raw") for lat, lon, name in coordinates
     ]
 
-    df = pd.DataFrame(boundaries + coords, columns=[
+    df = pd.DataFrame(coords, columns=[
 
         'lat', 'lon', 'name', 'type'])
     fig = px.scatter_mapbox(df,
@@ -107,7 +100,7 @@ def plot_coordinates(coordinates):
 
 
 if __name__ == "__main__":
-    group = "train"  # train/test/val
+    group = "val"  # train/test/val
 
     raw_data_path = f"data/{group}/raw"
     output_path = f"data/{group}/processed"
