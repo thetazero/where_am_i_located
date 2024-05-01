@@ -88,7 +88,7 @@ def plot_coordinates(coordinates):
                             lat='lat',
                             lon='lon',
                             color='type',
-                            size=[100 for _ in range(len(df))],
+                            size=[1000 for _ in range(len(df))],
                             hover_data=['name'],
                             zoom=15,
                             height=800,
@@ -100,7 +100,7 @@ def plot_coordinates(coordinates):
 
 
 if __name__ == "__main__":
-    group = "val"  # train/test/val
+    group = "train"  # train/test/val
 
     raw_data_path = f"data/{group}/raw"
     output_path = f"data/{group}/processed"
