@@ -31,16 +31,16 @@ def from_disk_eval(model_location, grid_size=2, data_source="train", idx=0):
     return nice_eval(model, grid_size, data_source, idx)
 
 
-def nice_eval(model, grid_size=2, data_source="train", idx=0):
+def nice_eval(model, grid_size=2, data_source="train", idx=0, prefix=""):
     proc_images_dataloader = DataLoader(
         data_loader.CampusImagesDataSet(
-            f"data/{data_source}/processed", transform=data_loader.all_transforms, grid_size=grid_size),
+            f"{prefix}data/{data_source}/processed", transform=data_loader.all_transforms, grid_size=grid_size),
         shuffle=False,
     )
 
     # show original image
-    image_raw_name = os.listdir(f"data/{data_source}/raw")[idx]
-    plot_image_from_disk(f"data/{data_source}/raw/{image_raw_name}")
+    image_raw_name = os.listdir(f"{prefix}data/{data_source}/raw")[idx]
+    plot_image_from_disk(f"{prefix}data/{data_source}/raw/{image_raw_name}")
 
     # show processed image
     pic = list(proc_images_dataloader)[idx]
@@ -53,10 +53,10 @@ def nice_eval(model, grid_size=2, data_source="train", idx=0):
                          "predicted location", "true location"])  # show predicted vs true location
     return pred_loc
 
-def performance_on_dataset(model, grid_size=2, data_source="test"):
+def performance_on_dataset(model, grid_size=2, data_source="test", prefix=""):
     proc_images_dataloader = DataLoader(
         data_loader.CampusImagesDataSet(
-            f"data/{data_source}/processed", transform=data_loader.all_transforms, grid_size=grid_size),
+            f"{prefix}data/{data_source}/processed", transform=data_loader.all_transforms, grid_size=grid_size),
         shuffle=False,
     )
 
