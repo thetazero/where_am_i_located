@@ -3,8 +3,18 @@ import numpy as np
 
 
 def plot_torch_image(img_tensor):
+    plt.figure()
     img_tensor = img_tensor.permute(1, 2, 0)
     plt.imshow(img_tensor)
+
+    plt.show()
+
+
+def plot_image_from_disk(image_path):
+    plt.figure()
+    plt.imshow(plt.imread(image_path))
+
+    plt.show()
 
 
 def plot_one_hot_vectors(vectors, labels):
