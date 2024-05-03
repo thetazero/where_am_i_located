@@ -52,3 +52,21 @@ def nice_eval(model, grid_size=2, data_source="train", idx=0):
     plot_one_hot_vectors([pred_arr, true_arr], [
                          "predicted location", "true location"])  # show predicted vs true location
     return pred_loc
+
+def performance_on_dataset(model, grid_size=2, data_source="test"):
+    proc_images_dataloader = DataLoader(
+        data_loader.CampusImagesDataSet(
+            f"data/{data_source}/processed", transform=data_loader.all_transforms, grid_size=grid_size),
+        shuffle=False,
+    )
+
+    yhats = []
+    ytrues = []
+
+    for i, pic in enumerate(proc_images_dataloader):
+        yhat = eval(model, pic[0])
+        ytrue = pic[1]
+        yhats.append(yhat)
+        ytrues.append(ytrue)
+
+    return yhats, ytrues
