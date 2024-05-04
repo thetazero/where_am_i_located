@@ -42,7 +42,7 @@ def nice_eval(model, grid_size=2, data_source="train", idx=0, prefix=""):
 
     # show original image
     image_raw_name = dataset.get_item_filename(idx)
-    plot_image_from_disk(f"{prefix}data/{data_source}/raw/{image_raw_name}")
+    plot_image_from_disk(f"{prefix}data/{data_source}/processed/{image_raw_name}")
 
     # show processed image
     pic = list(proc_images_dataloader)[idx]
